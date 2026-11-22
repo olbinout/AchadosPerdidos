@@ -9,12 +9,18 @@ public abstract class Usuario {
     private String senha;
     private String telefone;
 
-    public Usuario(int id, String nome, String email, String senha, String telefone) {
-        this.id = id;
+    /** Novo usuário (o id é gerado pelo banco ao cadastrar). */
+    public Usuario(String nome, String email, String senha, String telefone) {
         this.nome = nome;
         this.email = email;
         this.senha = senha;
         this.telefone = telefone;
+    }
+
+    /** Usuário que já existe (ex.: lido do banco). */
+    public Usuario(int id, String nome, String email, String senha, String telefone) {
+        this(nome, email, senha, telefone);
+        this.id = id;
     }
 
     /** Valida os dados do cadastro. */
@@ -32,28 +38,38 @@ public abstract class Usuario {
 
     /** Compara as credenciais informadas com as deste usuário. */
     public boolean login(String emailInformado, String senhaInformada) {
-        return email != null && 
-               senha != null && 
-               email.equalsIgnoreCase(emailInformado) && 
+        return email != null &&
+               senha != null &&
+               email.equalsIgnoreCase(emailInformado) &&
                senha.equals(senhaInformada);
     }
 
-    public int getId(){ 
-        return id; 
+    public int getId(){
+        return id;
     }
 
-    public String getNome(){ 
-        return nome; 
+    public String getNome(){
+        return nome;
     }
 
-    public String getEmail(){ 
+    public String getEmail(){
         return email;
     }
-    public String getTelefone(){ 
+
+    public String getTelefone(){
         return telefone;
     }
 
-    public void setNome(String nome){ 
-        this.nome = nome; 
+    public void setNome(String nome){
+        this.nome = nome;
+    }
+
+    // Usados só pelas subclasses para falar com o banco
+    protected String getSenha(){
+        return senha;
+    }
+
+    protected void setId(int id){
+        this.id = id;
     }
 }
