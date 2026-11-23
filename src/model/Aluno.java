@@ -2,9 +2,6 @@ package model;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import database.Banco;
 
@@ -12,7 +9,7 @@ public class Aluno extends Usuario {
 
     private String matricula;
     private String curso;
-    private List <Item> itensRegistrados = new ArrayList<>(); // Aluno 1 realiza 0..* Item
+    private int idAluno;
 
     public Aluno(String nome, String email, String senha, String telefone, String matricula, String curso) {
         super(nome, email, senha, telefone);
@@ -21,76 +18,130 @@ public class Aluno extends Usuario {
     }
 
     public Aluno(int id, String nome, String email, String senha, String telefone, String matricula, String curso) {
+        this(id, id, nome, email, senha, telefone, matricula, curso);
+    }
+
+    public Aluno(int id, int idAluno, String nome, String email, String senha, String telefone, String matricula, String curso) {
         super(id, nome, email, senha, telefone);
+        this.idAluno = idAluno;
         this.matricula = matricula;
         this.curso = curso;
     }
 
-    public void registrarItem(Item item) {
-        itensRegistrados.add(item);
+    @Override
+    public void cadastrar() {
+        super.cadastrar();
+        if (matricula == null || matricula.isBlank()) {
+            throw new IllegalArgumentException("Matrícula é obrigatória.");
+        }
+        if (curso == null || curso.isBlank()) {
+            throw new IllegalArgumentException("Curso é obrigatório.");
+        }
     }
 
-    public List<Item> getItensRegistrados() {
-        return Collections.unmodifiableList(itensRegistrados);
-    }
-
-    public String getMatricula(){
+    public String getMatricula() {
         return matricula;
     }
 
-    public String getCurso(){
+    public String getCurso() {
         return curso;
     }
 
-    public void setCurso(String curso){
-        this.curso = curso;
+    public void setCurso(String curso) {
+        if (curso == null || curso.isBlank()) {
+            throw new IllegalArgumentException("Curso não pode ser vazio.");
+        }
+        this.curso = curso.trim();
     }
 
-    // ---------- Banco de dados ----------
+    public int getIdAluno() {
+        return idAluno;
+    }
+
+    @Override
+    protected void setId(int id) {
+        super.setId(id);
+        this.idAluno = id;
+    }
+
 
     public boolean cadastrarAluno(Banco db) {
-        cadastrar(); // valida nome, e-mail e senha (lança IllegalArgumentException se inválido)
-        String query = String.format(
-                "INSERT INTO aluno (nome, email, senha, telefone, matricula, curso) VALUES (%s, %s, %s, %s, %s, %s)",
-                Banco.texto(getNome()), Banco.texto(getEmail()), Banco.texto(getSenha()),
-                Banco.texto(getTelefone()), Banco.texto(matricula), Banco.texto(curso));
-        if (db.queryUpdate(query) > 0) {
-            setId(db.ultimoId());
-            return true;
+        if (!cadastrarUsuario(db)) {
+            return false;
         }
-        return false;
+        this.idAluno = getId();
+        String query = String.format(
+                "INSERT INTO aluno (idAluno, matricula, curso) VALUES (%d, %s, %s)",
+                idAluno, Banco.texto(matricula), Banco.texto(curso));
+        return db.queryUpdate(query) > 0;
     }
 
     public boolean editarAluno(Banco db) {
+        if (!editarUsuario(db)) {
+            return false;
+        }
         String query = String.format(
-                "UPDATE aluno SET nome = %s, email = %s, senha = %s, telefone = %s, matricula = %s, curso = %s WHERE id = %d",
-                Banco.texto(getNome()), Banco.texto(getEmail()), Banco.texto(getSenha()),
-                Banco.texto(getTelefone()), Banco.texto(matricula), Banco.texto(curso), getId());
+                "UPDATE aluno SET matricula = %s, curso = %s WHERE idAluno = %d",
+                Banco.texto(matricula), Banco.texto(curso), idAluno);
         return db.queryUpdate(query) > 0;
     }
 
-    public static boolean removerAluno(Banco db, int id) {
-        String query = String.format("DELETE FROM aluno WHERE id = %d", id);
-        return db.queryUpdate(query) > 0;
+    public static boolean removerAluno(Banco db, int idAluno) {
+        db.queryUpdate(String.format("DELETE FROM aluno WHERE idAluno = %d", idAluno));
+        return db.queryUpdate(String.format("DELETE FROM usuario WHERE id = %d", idAluno)) > 0;
     }
 
-    // Retorna o aluno com esse id, ou null se não existir
-    public static Aluno buscarPorId(Banco db, int id) throws SQLException {
-        ResultSet rs = db.querySearch(String.format("SELECT * FROM aluno WHERE id = %d", id));
+    public static Aluno buscarPorId(Banco db, int idAluno) throws SQLException {
+        String query = String.format(
+                "SELECT u.id, u.nome, u.email, u.senha, u.telefone, a.idAluno, a.matricula, a.curso "
+                + "FROM aluno a INNER JOIN usuario u ON u.id = a.idAluno WHERE a.idAluno = %d",
+                idAluno);
+        ResultSet rs = db.querySearch(query);
         if (rs != null && rs.next()) {
-            return new Aluno(rs.getInt("id"), rs.getString("nome"), rs.getString("email"), rs.getString("senha"), rs.getString("telefone"), rs.getString("matricula"), rs.getString("curso"));
+            return new Aluno(
+                    rs.getInt("id"),
+                    rs.getInt("idAluno"),
+                    rs.getString("nome"),
+                    rs.getString("email"),
+                    rs.getString("senha"),
+                    rs.getString("telefone"),
+                    rs.getString("matricula"),
+                    rs.getString("curso"));
+        }
+        return null;
+    }
+
+    public static Aluno buscarPorEmail(Banco db, String email) throws SQLException {
+        String query = String.format(
+                "SELECT u.id, u.nome, u.email, u.senha, u.telefone, a.idAluno, a.matricula, a.curso "
+                + "FROM aluno a INNER JOIN usuario u ON u.id = a.idAluno WHERE LOWER(u.email) = LOWER(%s)",
+                Banco.texto(email));
+        ResultSet rs = db.querySearch(query);
+        if (rs != null && rs.next()) {
+            return new Aluno(
+                    rs.getInt("id"),
+                    rs.getInt("idAluno"),
+                    rs.getString("nome"),
+                    rs.getString("email"),
+                    rs.getString("senha"),
+                    rs.getString("telefone"),
+                    rs.getString("matricula"),
+                    rs.getString("curso"));
         }
         return null;
     }
 
     public static void listarAlunos(Banco db) throws SQLException {
-        ResultSet rs = db.querySearch("SELECT * FROM aluno");
+        String query = "SELECT u.id, u.nome, u.email, u.telefone, a.idAluno, a.matricula, a.curso "
+                + "FROM aluno a INNER JOIN usuario u ON u.id = a.idAluno";
+        ResultSet rs = db.querySearch(query);
         if (rs == null) {
             return;
         }
-        
+
         while (rs.next()) {
-            System.out.println(rs.getInt("id") + " | " + rs.getString("nome") + " | " + rs.getString("email") + " | " + rs.getString("matricula") + " | " + rs.getString("curso"));
+            System.out.println(rs.getInt("idAluno") + " | " + rs.getString("nome") + " | "
+                    + rs.getString("email") + " | " + rs.getString("matricula") + " | " + rs.getString("curso"));
         }
     }
 }

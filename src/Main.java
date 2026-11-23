@@ -68,23 +68,24 @@ public class Main {
     }
 
     static void criarTabelas(Banco db) {
-        db.queryUpdate("CREATE TABLE IF NOT EXISTS aluno ("
+        db.queryUpdate("CREATE TABLE IF NOT EXISTS usuario ("
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "nome TEXT NOT NULL, "
                 + "email TEXT NOT NULL, "
                 + "senha TEXT NOT NULL, "
-                + "telefone TEXT, "
+                + "telefone TEXT)");
+
+        db.queryUpdate("CREATE TABLE IF NOT EXISTS aluno ("
+                + "idAluno INTEGER PRIMARY KEY, "
                 + "matricula TEXT, "
-                + "curso TEXT)");
+                + "curso TEXT, "
+                + "FOREIGN KEY (idAluno) REFERENCES usuario(id) ON DELETE CASCADE)");
 
         db.queryUpdate("CREATE TABLE IF NOT EXISTS funcionario ("
-                + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + "nome TEXT NOT NULL, "
-                + "email TEXT NOT NULL, "
-                + "senha TEXT NOT NULL, "
-                + "telefone TEXT, "
+                + "idFuncionario INTEGER PRIMARY KEY, "
                 + "cargo TEXT, "
-                + "setor TEXT)");
+                + "setor TEXT, "
+                + "FOREIGN KEY (idFuncionario) REFERENCES usuario(id) ON DELETE CASCADE)");
 
         db.queryUpdate("CREATE TABLE IF NOT EXISTS local ("
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -99,8 +100,8 @@ public class Main {
                 + "descricao TEXT, "
                 + "status TEXT NOT NULL, "
                 + "dataRegistro TEXT NOT NULL, "
-                + "FOREIGN KEY (idAluno) REFERENCES aluno(id), "
-                + "FOREIGN KEY (idFuncionario) REFERENCES funcionario(id), "
+                + "FOREIGN KEY (idAluno) REFERENCES aluno(idAluno), "
+                + "FOREIGN KEY (idFuncionario) REFERENCES funcionario(idFuncionario), "
                 + "FOREIGN KEY (idLocal) REFERENCES local(id))");
 
         db.queryUpdate("CREATE TABLE IF NOT EXISTS foto ("

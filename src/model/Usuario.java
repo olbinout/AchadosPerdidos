@@ -1,6 +1,10 @@
 package model;
 
-/** Classe abstrata que centraliza os dados comuns de Aluno e Funcionario. */
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import database.Banco;
+
 public abstract class Usuario {
 
     private int id;
@@ -9,7 +13,6 @@ public abstract class Usuario {
     private String senha;
     private String telefone;
 
-    /** Novo usuário (o id é gerado pelo banco ao cadastrar). */
     public Usuario(String nome, String email, String senha, String telefone) {
         this.nome = nome;
         this.email = email;
@@ -17,59 +20,97 @@ public abstract class Usuario {
         this.telefone = telefone;
     }
 
-    /** Usuário que já existe (ex.: lido do banco). */
     public Usuario(int id, String nome, String email, String senha, String telefone) {
         this(nome, email, senha, telefone);
         this.id = id;
     }
 
-    /** Valida os dados do cadastro. */
     public void cadastrar() {
         if (nome == null || nome.isBlank()) {
             throw new IllegalArgumentException("Nome é obrigatório.");
         }
-        if (email == null || !email.contains("@")) {
+        if (email == null || email.isBlank() || !email.contains("@") || email.startsWith("@") || email.endsWith("@")) {
             throw new IllegalArgumentException("E-mail inválido.");
         }
-        if (senha == null || senha.length() < 4) {
+        if (senha == null || senha.isBlank() || senha.length() < 4) {
             throw new IllegalArgumentException("A senha deve ter pelo menos 4 caracteres.");
+        }
+        if (telefone == null || telefone.isBlank()) {
+            throw new IllegalArgumentException("Telefone é obrigatório.");
         }
     }
 
-    /** Compara as credenciais informadas com as deste usuário. */
-    public boolean login(String emailInformado, String senhaInformada) {
-        return email != null &&
-               senha != null &&
-               email.equalsIgnoreCase(emailInformado) &&
-               senha.equals(senhaInformada);
+    public boolean login() {
+        return email != null && !email.isBlank() && senha != null && !senha.isBlank();
     }
 
-    public int getId(){
+    public boolean login(String emailInformado, String senhaInformada) {
+        return email != null
+                && senha != null
+                && email.equalsIgnoreCase(emailInformado)
+                && senha.equals(senhaInformada);
+    }
+
+    public boolean login(Banco db) throws SQLException {
+        if (!login()) {
+            return false;
+        }
+        String query = String.format(
+                "SELECT id FROM usuario WHERE LOWER(email) = LOWER(%s) AND senha = %s",
+                Banco.texto(email), Banco.texto(senha));
+        ResultSet rs = db.querySearch(query);
+        return rs != null && rs.next();
+    }
+
+    public int getId() {
         return id;
     }
 
-    public String getNome(){
+    public String getNome() {
         return nome;
     }
 
-    public String getEmail(){
+    public String getEmail() {
         return email;
     }
 
-    public String getTelefone(){
+    public String getTelefone() {
         return telefone;
     }
 
-    public void setNome(String nome){
-        this.nome = nome;
+    public void setNome(String nome) {
+        if (nome == null || nome.isBlank()) {
+            throw new IllegalArgumentException("Nome não pode ser vazio.");
+        }
+        this.nome = nome.trim();
     }
 
-    // Usados só pelas subclasses para falar com o banco
-    protected String getSenha(){
+    protected String getSenha() {
         return senha;
     }
 
-    protected void setId(int id){
+    protected void setId(int id) {
         this.id = id;
+    }
+
+
+    protected boolean cadastrarUsuario(Banco db) {
+        cadastrar();
+        String query = String.format(
+                "INSERT INTO usuario (nome, email, senha, telefone) VALUES (%s, %s, %s, %s)",
+                Banco.texto(nome), Banco.texto(email), Banco.texto(senha), Banco.texto(telefone));
+        if (db.queryUpdate(query) > 0) {
+            this.id = db.ultimoId();
+            return true;
+        }
+        return false;
+    }
+
+    protected boolean editarUsuario(Banco db) {
+        cadastrar();
+        String query = String.format(
+                "UPDATE usuario SET nome = %s, email = %s, senha = %s, telefone = %s WHERE id = %d",
+                Banco.texto(nome), Banco.texto(email), Banco.texto(senha), Banco.texto(telefone), id);
+        return db.queryUpdate(query) > 0;
     }
 }
