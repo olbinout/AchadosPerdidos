@@ -111,7 +111,7 @@ public class Item {
         return idFuncionario == 0 ? "NULL" : String.valueOf(idFuncionario);
     }
 
-    // idLocal = 0 significa "sem local" (item perdido ou ja devolvido): no banco isso e NULL
+    
     private String idLocalSql() {
         return idLocal == 0 ? "NULL" : String.valueOf(idLocal);
     }
