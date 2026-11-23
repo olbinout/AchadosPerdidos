@@ -111,11 +111,16 @@ public class Item {
         return idFuncionario == 0 ? "NULL" : String.valueOf(idFuncionario);
     }
 
+    // idLocal = 0 significa "sem local" (item perdido ou ja devolvido): no banco isso e NULL
+    private String idLocalSql() {
+        return idLocal == 0 ? "NULL" : String.valueOf(idLocal);
+    }
+
     public boolean cadastrarItem(Banco db) {
         String query = String.format(
                 "INSERT INTO item (idAluno, idFuncionario, idLocal, titulo, descricao, status, dataRegistro) "
-                + "VALUES (%d, %s, %d, %s, %s, %s, %s)",
-                idAluno, idFuncionarioSql(), idLocal, Banco.texto(titulo), Banco.texto(descricao),
+                + "VALUES (%d, %s, %s, %s, %s, %s, %s)",
+                idAluno, idFuncionarioSql(), idLocalSql(), Banco.texto(titulo), Banco.texto(descricao),
                 Banco.texto(status.name()), Banco.texto(dataRegistro));
         if (db.queryUpdate(query) > 0) {
             this.id = db.ultimoId();
@@ -126,8 +131,8 @@ public class Item {
 
     public boolean editarItem(Banco db) {
         String query = String.format(
-                "UPDATE item SET idFuncionario = %s, idLocal = %d, titulo = %s, descricao = %s, status = %s WHERE id = %d",
-                idFuncionarioSql(), idLocal, Banco.texto(titulo), Banco.texto(descricao),
+                "UPDATE item SET idFuncionario = %s, idLocal = %s, titulo = %s, descricao = %s, status = %s WHERE id = %d",
+                idFuncionarioSql(), idLocalSql(), Banco.texto(titulo), Banco.texto(descricao),
                 Banco.texto(status.name()), id);
         return db.queryUpdate(query) > 0;
     }
@@ -170,8 +175,9 @@ public class Item {
             return;
         }
         while (rs.next()) {
+            int idLocal = rs.getInt("idLocal"); // NULL no banco vira 0
             System.out.println(rs.getInt("id") + " | " + rs.getString("titulo") + " | "
-                    + rs.getString("status") + " | local " + rs.getInt("idLocal")
+                    + rs.getString("status") + " | " + (idLocal == 0 ? "sem local" : "local " + idLocal)
                     + " | " + rs.getString("dataRegistro"));
         }
     }

@@ -45,6 +45,20 @@ public class Local {
         return new ArrayList<>(itens);
     }
 
+    public List<Item> listarItens(Banco db) throws SQLException {
+        List<Item> lista = new ArrayList<>();
+        ResultSet rs = db.querySearch(String.format("SELECT * FROM item WHERE idLocal = %d", id));
+        if (rs == null) {
+            return lista;
+        }
+        while (rs.next()) {
+            lista.add(new Item(rs.getInt("id"), rs.getInt("idAluno"), rs.getInt("idFuncionario"),
+                    rs.getInt("idLocal"), rs.getString("titulo"), rs.getString("descricao"),
+                    StatusItem.valueOf(rs.getString("status")), rs.getString("dataRegistro")));
+        }
+        return lista;
+    }
+
     public int getId(){
         return id;
     }
@@ -77,7 +91,6 @@ public class Local {
         return db.queryUpdate(query) > 0;
     }
 
-    // Retorna o local com esse id, ou null se não existir
     public static Local buscarPorId(Banco db, int id) throws SQLException {
         ResultSet rs = db.querySearch(String.format("SELECT * FROM local WHERE id = %d", id));
         if (rs != null && rs.next()) {

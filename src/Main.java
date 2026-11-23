@@ -1,7 +1,5 @@
-import java.sql.SQLException;
-
 import database.Banco;
-import model.*;
+import menu.Menu;
 
 public class Main {
 
@@ -9,57 +7,11 @@ public class Main {
         Banco db = new Banco();
         criarTabelas(db);
 
-        try {
-            Aluno aluno = new Aluno("Otávio", "otavio@alunos.ufersa.edu.br", "123456", "84999999999", "2025010001", "Engenharia de Computação");
-
-            Funcionario seguranca = new Funcionario("Ruan", "ruan@ufersa.edu.br", "654321", "84988888888", "Professor", "Segurança");
-
-            Local portaria = new Local("Biblioteca");
-
-            aluno.cadastrarAluno(db);
-            seguranca.cadastrarFuncionario(db);
-            portaria.cadastrarLocal(db);
-
-            Item item = new Item(aluno.getId(), 0, portaria.getId(), "Garrafa térmica", "Azul, com adesivo da UFERSA", StatusItem.PERDIDO);
-            item.cadastrarItem(db);
-            item.adicionarFoto(db, "fotos/garrafa1.jpg");
-
-            item.setIdFuncionario(seguranca.getId());
-            item.atualizarStatus(db, StatusItem.ACHADO);
-
-            System.out.println("--- Alunos ---");
-            Aluno.listarAlunos(db);
-            System.out.println();
-
-            System.out.println("--- Funcionarios ---");
-            Funcionario.listarFuncionarios(db);
-            System.out.println();
-
-            System.out.println("--- Locais ---");
-            Local.listarLocais(db);
-            System.out.println();
-
-            System.out.println("--- Itens ---");
-            Item.listarItens(db);
-
-            Item doBanco = Item.buscarPorId(db, item.getId());
-            System.out.println("\n" + doBanco);
-            System.out.println("Itens achados em " + portaria.getNome() + ": " + Local.contarItensAchados(db, portaria.getId()));
-
-            Aluno alunoDoBanco = Aluno.buscarPorId(db, aluno.getId());
-            System.out.println("Login aluno: " + alunoDoBanco.login("maria@alunos.ufersa.edu.br", "123456"));
-
-            item.atualizarStatus(db, StatusItem.DEVOLVIDO);
-            System.out.println("Itens achados em " + portaria.getNome() + " apos a devolucao: " + Local.contarItensAchados(db, portaria.getId()));
-
-        } catch (SQLException e) {
-            System.out.println("Erro no banco: " + e.getMessage());
-        } catch (IllegalArgumentException e) {
-            System.out.println("Dados invalidos: " + e.getMessage());
-        }
+        new Menu(db).principal();
 
         db.desconectar();
     }
+
 
     static void criarTabelas(Banco db) {
         db.queryUpdate("CREATE TABLE IF NOT EXISTS usuario ("
@@ -89,7 +41,7 @@ public class Main {
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "idAluno INTEGER NOT NULL, "
                 + "idFuncionario INTEGER, "
-                + "idLocal INTEGER NOT NULL, "
+                + "idLocal INTEGER, "
                 + "titulo TEXT NOT NULL, "
                 + "descricao TEXT, "
                 + "status TEXT NOT NULL, "
