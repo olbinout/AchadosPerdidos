@@ -1,0 +1,25 @@
+# Arquivos compilados do Java
+*.class
+bin/
+out/
+
+# Banco de dados SQLite local gerado em execução
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Classe de teste local (caso não queira subir)
+# src/MainTest.java
+
+# Configurações de IDEs
+.vscode/
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
