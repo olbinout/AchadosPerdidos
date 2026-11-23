@@ -11,10 +11,9 @@ public class Local {
 
     private int id;
     private String nome;
-    private List <Item> itens = new ArrayList<>(); // agregação: Local 1 guarda 0..* Item
+    private List <Item> itens = new ArrayList<>();
     private int quantidadeAtual;
 
-    /** Novo local (o id é gerado pelo banco ao cadastrar). */
     public Local(String nome) {
         this.nome = nome;
     }
@@ -58,7 +57,6 @@ public class Local {
         return quantidadeAtual;
     }
 
-    // ---------- Banco de dados ----------
 
     public boolean cadastrarLocal(Banco db) {
         String query = String.format("INSERT INTO local (nome) VALUES (%s)", Banco.texto(nome));
@@ -98,7 +96,6 @@ public class Local {
         }
     }
 
-    // Quantos itens com status ACHADO estão neste local agora
     public static int contarItensAchados(Banco db, int idLocal) throws SQLException {
         ResultSet rs = db.querySearch(String.format(
                 "SELECT COUNT(*) AS total FROM item WHERE idLocal = %d AND status = 'ACHADO'", idLocal));

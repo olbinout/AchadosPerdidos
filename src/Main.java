@@ -3,7 +3,6 @@ import java.sql.SQLException;
 import database.Banco;
 import model.*;
 
-/** Base de teste: cria o banco achados.db, grava dados de exemplo e mostra o resultado. */
 public class Main {
 
     public static void main(String[] args) {
@@ -21,12 +20,10 @@ public class Main {
             seguranca.cadastrarFuncionario(db);
             portaria.cadastrarLocal(db);
 
-            // idFuncionario = 0: nenhum funcionário atendeu o item ainda (vira NULL no banco)
             Item item = new Item(aluno.getId(), 0, portaria.getId(), "Garrafa térmica", "Azul, com adesivo da UFERSA", StatusItem.PERDIDO);
             item.cadastrarItem(db);
             item.adicionarFoto(db, "fotos/garrafa1.jpg");
 
-            // Um funcionário atende o item e ele passa a ser ACHADO
             item.setIdFuncionario(seguranca.getId());
             item.atualizarStatus(db, StatusItem.ACHADO);
 
@@ -47,14 +44,11 @@ public class Main {
 
             Item doBanco = Item.buscarPorId(db, item.getId());
             System.out.println("\n" + doBanco);
-            System.out.println("Itens achados em " + portaria.getNome() + ": "
-                    + Local.contarItensAchados(db, portaria.getId()));
+            System.out.println("Itens achados em " + portaria.getNome() + ": " + Local.contarItensAchados(db, portaria.getId()));
 
-            // Teste de login com os dados lidos do banco
             Aluno alunoDoBanco = Aluno.buscarPorId(db, aluno.getId());
             System.out.println("Login aluno: " + alunoDoBanco.login("maria@alunos.ufersa.edu.br", "123456"));
 
-            // Devolução
             item.atualizarStatus(db, StatusItem.DEVOLVIDO);
             System.out.println("Itens achados em " + portaria.getNome() + " apos a devolucao: " + Local.contarItensAchados(db, portaria.getId()));
 
