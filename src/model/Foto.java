@@ -15,7 +15,7 @@ public class Foto {
     private String caminhoArquivo;
     private LocalDateTime dataUpload;
 
-    /** Nova foto (data de upload = agora). */
+    
     public Foto(int id, int idItem, String caminhoArquivo) {
         this.id = id;
         this.idItem = idItem;
@@ -23,7 +23,6 @@ public class Foto {
         this.dataUpload = LocalDateTime.now();
     }
 
-    /** Foto que já existe (ex.: lida do banco), com a data original. */
     public Foto(int id, int idItem, String caminhoArquivo, LocalDateTime dataUpload) {
         this.id = id;
         this.idItem = idItem;
@@ -51,7 +50,6 @@ public class Foto {
         return dataUpload;
     }
 
-    // ---------- Banco de dados ----------
 
     public boolean cadastrarFoto(Banco db) {
         String query = String.format(
@@ -69,7 +67,7 @@ public class Foto {
         return db.queryUpdate(query) > 0;
     }
 
-    // Todas as fotos de um item (lista vazia se não tiver nenhuma)
+    
     public static List<Foto> listarPorItem(Banco db, int idItem) throws SQLException {
         List<Foto> fotos = new ArrayList<>();
         ResultSet rs = db.querySearch(String.format("SELECT * FROM foto WHERE idItem = %d", idItem));
