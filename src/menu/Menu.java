@@ -9,8 +9,8 @@ import model.*;
 
 public class Menu {
 
-    private final Banco db;
-    private final Scanner entrada = new Scanner(System.in);
+    private Banco db;
+    private Scanner entrada = new Scanner(System.in);
 
     public Menu(Banco db) {
         this.db = db;
