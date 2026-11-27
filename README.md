@@ -16,7 +16,7 @@ Sistema de gerenciamento de **Achados e Perdidos** voltado para o ambiente unive
 
 ## Sobre o Projeto
 
-O sistema permite o controle centralizado de objetos perdidos, encontrados e devolvidos dentro da UFERSA. Por meio de menus interativos no terminal, é possível gerenciar alunos, funcionários, locais de armazenamento, itens registrados e fotos associadas a cada ocorrência, mantendo integridade referencial e validações de entrada.
+O sistema permite o controle centralizado de objetos perdidos, encontrados e devolvidos dentro da UFERSA. Ao iniciar a aplicação, o acesso é protegido por uma tela de login restrita ao administrador. Após a autenticação, por meio de menus interativos no terminal, é possível gerenciar alunos, funcionários, locais de armazenamento, itens registrados e fotos associadas a cada ocorrência, mantendo integridade referencial e validações de entrada.
 
 ## Conceitos de POO Aplicados
 
@@ -35,6 +35,14 @@ A modelagem do sistema foi estruturada aplicando os principais pilares e relacio
 * **Composição:** `Item` possui múltiplas instâncias de `Foto` (`1` para `0..*`), vinculando o ciclo de vida das imagens ao registro do objeto.
 
 ## Funcionalidades
+
+### Autenticação e Controle de Acesso (Login)
+
+* Tela de login exibida obrigatoriamente na inicialização do sistema antes de liberar o menu principal.
+
+* Acesso restrito exclusivamente ao usuário administrador (adm@ufersa.edu.br), bloqueando tentativas de entrada com outros e-mails.
+
+* Validação das credenciais (e-mail e senha) diretamente na tabela usuario do banco de dados SQLite, encerrando a execução caso o login falhe.
 
 ### Gestão de Alunos
 
@@ -98,11 +106,11 @@ A persistência é realizada localmente com **SQLite**, no arquivo `achados_perd
 
 ```
 ├── src/
-│   ├── Main.java               # Ponto de entrada da aplicação
+│   ├── Main.java               # Ponto de entrada e controle de autenticação da aplicação 
 │   ├── database/
 │   │   └── Banco.java          # Conexão SQLite, criação de tabelas e execução de queries
 │   ├── menu/
-│   │   └── Menu.java           # Interface de terminal (CLI) e validações de entrada
+│   │   └── Menu.java           # Tela de login administrativo, interface de terminal (CLI) e validações de entrada
 │   └── model/
 │       ├── Usuario.java        # Classe abstrata base
 │       ├── Aluno.java          # Subclasse de Usuario
@@ -172,4 +180,4 @@ A persistência é realizada localmente com **SQLite**, no arquivo `achados_perd
      
      ```
 
-> Ao iniciar o programa, o arquivo `achados_perdidos.db` será criado automaticamente na raiz do projeto caso ainda não exista.
+> Ao iniciar o programa, o arquivo `achados_perdidos.db` será criado automaticamente na raiz do projeto caso ainda não exista.  Para entrar no menu principal, é necessário autenticar-se na tela de login utilizando o e-mail de administrador (adm@ufersa.edu.br) e a senha correspondente cadastrada na tabela usuario.
