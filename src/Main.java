@@ -5,8 +5,11 @@ public class Main {
 
     public static void main(String[] args) {
         Banco db = new Banco();
+        Menu menu = new Menu(db);
 
-        new Menu(db).principal();
+        if (menu.login()) {
+            menu.principal();
+        }
 
         db.desconectar();
     }

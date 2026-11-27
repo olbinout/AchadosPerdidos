@@ -3,6 +3,7 @@ package menu;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
+import java.sql.ResultSet;
 
 import database.Banco;
 import model.*;
@@ -14,6 +15,44 @@ public class Menu {
 
     public Menu(Banco db) {
         this.db = db;
+    }
+
+public boolean login() {
+        System.out.println("\n===== TELA DE LOGIN =====");
+        System.out.print("Email: ");
+        String email = entrada.nextLine().trim();
+
+        System.out.print("Senha: ");
+        String senha = entrada.nextLine();
+
+        if (!email.equals("adm@ufersa.edu.br")) {
+            System.out.println("Acesso permitido apenas para o administrador.");
+            return false;
+        }
+
+        String sql = "SELECT id, nome FROM usuario WHERE email = " + Banco.texto(email)
+                   + " AND senha = " + Banco.texto(senha);
+
+        try {
+            ResultSet rs = db.querySearch(sql);
+    
+            if (rs != null && rs.next()) {
+                String nome = rs.getString("nome");
+                rs.close();
+                System.out.println("Login realizado com sucesso! Bem-vindo(a), " + nome + ".");
+                return true;
+            }
+            
+            if (rs != null) {
+                rs.close();
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Erro ao consultar o banco: " + e.getMessage());
+        }
+
+        System.out.println("Email ou senha incorretos.");
+        return false;
     }
 
     public void principal() {
@@ -349,6 +388,26 @@ public class Menu {
         }
     }
 
+    private static boolean nomeValido(String nome) {
+        return nome.matches("[\\p{L} ]{3,}");
+    }
+
+    private static boolean emailValido(String email) {
+        return email.matches("[\\w.-]+@[\\w-]+(\\.[\\w-]+)+");
+    }
+
+    private static boolean telefoneValido(String telefone) {
+        return telefone.matches("\\d{10,11}");
+    }
+
+    private boolean emailEmUso(String email, int idProprio) throws SQLException {
+        Aluno aluno = Aluno.buscarPorEmail(db, email);
+        if (aluno != null && aluno.getId() != idProprio) {
+            return true;
+        }
+        Funcionario funcionario = Funcionario.buscarPorEmail(db, email);
+        return funcionario != null && funcionario.getId() != idProprio;
+    }
 
     private int lerInt(String mensagem) {
         while (true) {
@@ -360,7 +419,7 @@ public class Menu {
             }
         }
     }
-
+    
     private String lerTexto(String campo) {
         System.out.print(campo + ": ");
         String texto = entrada.nextLine().trim();
@@ -370,18 +429,6 @@ public class Menu {
             texto = entrada.nextLine().trim();
         }
         return texto;
-    }
-
-    private static boolean nomeValido(String nome) {
-        return nome.matches("[\\p{L} ]{3,}");
-    }
-
-    private static boolean emailValido(String email) {
-        return email.matches("[\\w.-]+@[\\w-]+(\\.[\\w-]+)+");
-    }
-
-    private static boolean telefoneValido(String telefone) {
-        return telefone.matches("\\d{10,11}");
     }
 
     private String lerNome() {
@@ -408,16 +455,6 @@ public class Menu {
             }
         }
     }
-
-    private boolean emailEmUso(String email, int idProprio) throws SQLException {
-        Aluno aluno = Aluno.buscarPorEmail(db, email);
-        if (aluno != null && aluno.getId() != idProprio) {
-            return true;
-        }
-        Funcionario funcionario = Funcionario.buscarPorEmail(db, email);
-        return funcionario != null && funcionario.getId() != idProprio;
-    }
-
     private String lerSenha() {
         System.out.print("Senha: ");
         String senha = entrada.nextLine();
